@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ndvi-batch
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: ndvi-batch
+            image: agrosugar-ndvi:1.0
+            imagePullPolicy: Never
+            command: ["python", "-c", "import numpy as np,time; t=time.time(); a=np.random.rand(2000,2000).astype(np.float32); b=np.random.rand(2000,2000).astype(np.float32); i=(a-b)/(a+b+1e-9); print(\"lote NDVI 2000x2000 media=%.5f ms=%.1f\" % (i.mean(), (time.time()-t)*1000))"]
+            resources:
+              requests:
+                cpu: 100m
+                memory: 96Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
